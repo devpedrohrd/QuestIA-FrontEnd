@@ -2,15 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, School } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
-import { toast } from 'sonner';
+import { URL_CALLBACK } from './utils/utils';
 
 export default function Home() {
   const handleGoogleLogin = async () => {
     console.log('Google login clicked');
-    window.location.href = 'http://localhost:3334/auth/google';
+    window.location.href = URL_CALLBACK || '';
   };
 
   return (
@@ -34,14 +33,6 @@ export default function Home() {
             />
           </div>
           <div className="grid gap-4">
-            {/* <Button
-              size="lg"
-              className="w-full"
-              onClick={handleGoogleLogin}
-            >
-              <School className="mr-2 h-5 w-5" />
-              Login as Student
-            </Button> */}
             <Button
               size="lg"
               variant="outline"
