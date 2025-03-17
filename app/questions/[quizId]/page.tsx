@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/app/utils/utils';
 
 
 type Alternative = {
@@ -38,7 +39,7 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const response = await fetch(`http://localhost:3334/questions/${params.quizId}`, {
+        const response = await fetch(`${API_URL}/questions/${params.quizId}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -81,7 +82,7 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
 
       console.log("Enviando para o backend:", JSON.stringify(responseFormDTO, null, 2));
 
-      const response = await fetch(`http://localhost:3334/questions/${params.quizId}/responses`, {
+      const response = await fetch(`${API_URL}/questions/${params.quizId}/responses`, {
         method: 'POST',
         credentials: 'include',
         headers: {

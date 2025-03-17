@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { API_URL, FRONTEND_URL } from '../utils/utils';
 
 type Quiz = {
   id: string;
@@ -60,12 +61,11 @@ export default function TeacherDashboard() {
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
 
 
-
   // 🔹 Fetch os quizzes do professor logado
   useEffect(() => {
     async function fetchQuizzes() {
       try {
-        const response = await fetch('http://localhost:3334/quizzes', {
+        const response = await fetch(`${API_URL}/quizzes`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -100,7 +100,7 @@ export default function TeacherDashboard() {
         tipoPergunta: formData.questionType,
       };
 
-      const response = await fetch('http://localhost:3334/quizzes', {
+      const response = await fetch(`${API_URL}/quizzes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function TeacherDashboard() {
   // 🔹 Gerar questões para um quiz
   const generateQuestions = async (quizId: string) => {
     try {
-      const response = await fetch(`http://localhost:3334/questions/${quizId}`, {
+      const response = await fetch(`${API_URL}/questions/${quizId}`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -156,7 +156,7 @@ export default function TeacherDashboard() {
 
   const saveQuestions = async (quizId: string) => {
     try {
-      const response = await fetch(`http://localhost:3334/questions/save/${quizId}`, {
+      const response = await fetch(`${API_URL}/questions/save/${quizId}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -182,7 +182,7 @@ export default function TeacherDashboard() {
   // 🔹 Deletar um quiz
   const deleteQuiz = async (quizId: string) => {
     try {
-      const response = await fetch(`http://localhost:3334/quizzes/${quizId}`, {
+      const response = await fetch(`${API_URL}/quizzes/${quizId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -201,12 +201,12 @@ export default function TeacherDashboard() {
 
   // 🔹 Redirecionar para a página de perguntas do quiz
   const viewQuestions = (quizId: string) => {
-    router.push(`http://localhost:3000/questions/${quizId}`);
+    router.push(`${FRONTEND_URL}/questions/${quizId}`);
   };
 
   // 🔹 Copiar link do quiz para a área de transferência
   const copyLink = (quizId: string) => {
-    const link = `http://localhost:3000/questions/${quizId}`
+    const link = `${FRONTEND_URL}/questions/${quizId}`
 
     navigator.clipboard.writeText(link)
     toast.success('Link copiado para a área de transferência!');

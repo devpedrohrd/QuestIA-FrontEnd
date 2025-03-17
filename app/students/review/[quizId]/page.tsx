@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { API_URL } from '@/app/utils/utils';
 
 type Alternative = {
     letra: string;
@@ -43,7 +44,7 @@ export default function ReviewPage({ params }: { params: { quizId: string } }) {
     useEffect(() => {
         async function fetchQuiz() {
             try {
-                const response = await fetch(`http://localhost:3334/answer/${params.quizId}`, {
+                const response = await fetch(`${API_URL}/answer/${params.quizId}`, {
                     method: 'GET',
                     credentials: 'include',
                 });

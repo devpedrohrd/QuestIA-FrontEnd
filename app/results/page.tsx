@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { FRONTEND_URL } from '../utils/utils';
 
 type QuizResult = {
     questionId: string;
@@ -29,7 +30,7 @@ export default function ResultsPage() {
             setAcertos(acertos);
             setErros(erros);
         } else {
-            router.push('/'); // Redireciona para a home se não houver dados
+            router.push(`${FRONTEND_URL}/`); // Redireciona para a home se não houver dados
         }
     }, [router]);
 
