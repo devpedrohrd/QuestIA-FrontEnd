@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap } from 'lucide-react';
 import Image from 'next/image';
-import { URL_CALLBACK } from './utils/utils';
-
 export default function Home() {
   const handleGoogleLogin = async () => {
     console.log('Google login clicked');
-    window.location.href = URL_CALLBACK || '';
+    window.location.href = process.env.URL_CALLBACK || ''
   };
 
   return (
