@@ -163,10 +163,11 @@ export default function TeacherDashboard() {
 
   // 🔹 Copiar link do quiz para a área de transferência
   const copyLink = (quizId: string) => {
-    const link = `${FRONTEND_URL}/questions/${quizId}`
+    const link = `${window.location.origin}/questions/${quizId}`;
 
     navigator.clipboard.writeText(link)
-    toast.success('Link copiado para a área de transferência!');
+      .then(() => toast.success('Link copiado para a área de transferência!'))
+      .catch(() => toast.error('Erro ao copiar o link.'));
   };
 
   return (
@@ -274,7 +275,7 @@ export default function TeacherDashboard() {
                       <Button variant="secondary" onClick={() => viewQuestions(quiz.id)}>
                         Ver Perguntas
                       </Button>
-                      <Button variant="outline" onClick={() => copyLink(quiz.link)}>
+                      <Button variant="outline" onClick={() => copyLink(quiz.id)}>
                         Copiar Link
                       </Button>
                       <Button variant="destructive" onClick={() => deleteQuiz(quiz.id)}>
