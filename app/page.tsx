@@ -6,7 +6,6 @@ import { GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 export default function Home() {
   const handleGoogleLogin = async () => {
-    console.log('Google login clicked');
     window.location.href = process.env.URL_CALLBACK || ''
   };
 

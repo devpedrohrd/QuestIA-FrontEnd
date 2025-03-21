@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { API_URL, FRONTEND_URL } from '../utils/utils';
+import { API_URL, FRONTEND_URL } from '../../utils/utils';
+import api from '../../services/api';
 
 type Quiz = {
   id: string;
@@ -65,17 +66,8 @@ export default function TeacherDashboard() {
   useEffect(() => {
     async function fetchQuizzes() {
       try {
-        const response = await fetch(`${API_URL}/quizzes`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar quizzes');
-        }
-
-        const data: Quiz[] = await response.json();
-        setQuizzes(data);
+        const response = await api.get<Quiz[]>('/quizzes');
+        setQuizzes(response.data);
       } catch (error) {
         console.error('Erro ao carregar quizzes:', error);
         toast.error('Erro ao carregar os quizzes.');
@@ -85,6 +77,7 @@ export default function TeacherDashboard() {
     }
 
     fetchQuizzes();
+
   }, []);
 
   // 🔹 Criar novo quiz
@@ -100,20 +93,9 @@ export default function TeacherDashboard() {
         tipoPergunta: formData.questionType,
       };
 
-      const response = await fetch(`${API_URL}/quizzes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(quizData),
-      });
+      const response = await api.post('/quizzes', quizData);
+      const newQuiz = response.data;
 
-      if (!response.ok) {
-        throw new Error('Erro ao criar quiz');
-      }
-
-      const newQuiz = await response.json();
       setQuizzes([...quizzes, newQuiz]);
       toast.success('Quiz criado com sucesso!');
     } catch (error) {
@@ -122,27 +104,17 @@ export default function TeacherDashboard() {
     }
   };
 
+
   // 🔹 Gerar questões para um quiz
   const generateQuestions = async (quizId: string) => {
     try {
-      const response = await fetch(`${API_URL}/questions/${quizId}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const response = await api.post(`/questions/${quizId}`);
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error('Erro ao gerar questões');
-      }
-
-      const data = await response.json();
-
-      console.log("Questões carregadas:", data);
-
-      // Verifica se o data.questions existe e é um array antes de atualizar o estado
       if (Array.isArray(data) && data.length > 0) {
-        setGeneratedQuestions([...data]); // Garante a atualização do estado
+        setGeneratedQuestions([...data]);
         setCurrentQuizId(quizId);
-        setIsEditing(true); // Exibe o modal
+        setIsEditing(true);
       } else {
         toast.error("Nenhuma questão foi gerada.");
       }
@@ -153,24 +125,12 @@ export default function TeacherDashboard() {
   };
 
 
-
+  // 🔹 Salvar questões geradas
   const saveQuestions = async (quizId: string) => {
     try {
-      const response = await fetch(`${API_URL}/questions/save/${quizId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(generatedQuestions),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao salvar questões');
-      }
-
+      await api.post(`/questions/save/${quizId}`, generatedQuestions);
       toast.success('Questões salvas com sucesso!');
-      setIsEditing(false); // Fecha o modal
+      setIsEditing(false);
     } catch (error) {
       console.error('Erro ao salvar questões:', error);
       toast.error('Erro ao salvar questões.');
@@ -178,25 +138,22 @@ export default function TeacherDashboard() {
   };
 
 
-
-  // 🔹 Deletar um quiz
+  // 🔹 Deletar quiz
   const deleteQuiz = async (quizId: string) => {
     try {
-      const response = await fetch(`${API_URL}/quizzes/${quizId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao deletar quiz');
-      }
-
+      await api.delete(`/quizzes/${quizId}`);
       setQuizzes(quizzes.filter((quiz) => quiz.id !== quizId));
       toast.success('Quiz deletado com sucesso!');
     } catch (error) {
       console.error('Erro ao deletar quiz:', error);
       toast.error('Erro ao deletar quiz.');
     }
+  };
+
+
+  // 🔹 Ver ranking
+  const fetchRanking = (quizId: string) => {
+    router.push(`/dashboard/teacher/ranking/${quizId}`);
   };
 
   // 🔹 Redirecionar para a página de perguntas do quiz
@@ -323,6 +280,9 @@ export default function TeacherDashboard() {
                       <Button variant="destructive" onClick={() => deleteQuiz(quiz.id)}>
                         Deletar Quiz
                       </Button>
+                      <Button variant="default" onClick={() => fetchRanking(quiz.id)}>
+                        Ranking
+                      </Button>
                     </div>
                   </li>
                 ))}
@@ -331,6 +291,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
       </div>
+
 
       {/* 🔹 Modal de edição das questões */}
       {isEditing && generatedQuestions.length > 0 && (

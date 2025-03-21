@@ -11,7 +11,7 @@ type QuizResult = {
     respostaEscolhida: string;
     respostaCorreta: string;
     explicacao: string;
-    correto: boolean;
+    correto: boolean | null; // 🔹 Permite valores nulos para evitar erro ao renderizar
 };
 
 export default function ResultsPage() {
@@ -25,10 +25,15 @@ export default function ResultsPage() {
         // 🔹 Recupera os dados armazenados na sessão
         const storedResults = sessionStorage.getItem('quizResults');
         if (storedResults) {
-            const { resultados, acertos, erros } = JSON.parse(storedResults);
-            setResultados(resultados);
-            setAcertos(acertos);
-            setErros(erros);
+            try {
+                const { resultados, acertos, erros } = JSON.parse(storedResults);
+                setResultados(resultados || []);
+                setAcertos(acertos ?? 0);
+                setErros(erros ?? 0);
+            } catch (error) {
+                console.error("Erro ao processar os resultados do quiz:", error);
+                router.push(`${FRONTEND_URL}/`); // Redireciona para a home em caso de erro
+            }
         } else {
             router.push(`${FRONTEND_URL}/`); // Redireciona para a home se não houver dados
         }
@@ -41,17 +46,24 @@ export default function ResultsPage() {
                     <CardTitle>Resultados do Quiz</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {resultados.map((res) => (
-                        <div
+                    {resultados.length > 0 ? (
+                        resultados.map((res) => (
+                            <div
                             key={res.questionId}
-                            className={`p-3 mb-2 rounded-md ${res.correto ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                                }`}
+                                className={`p-3 mb-2 rounded-md ${res.respostaEscolhida.toLocaleLowerCase() === res.respostaCorreta.toLowerCase()
+                                    ? "bg-green-100 text-green-700"  // ✅ Resposta correta (match exato)
+                                    : "bg-red-100 text-red-700"      // ❌ Resposta errada
+                                    }`}
                         >
-                            <p className="font-medium">{res.explicacao}</p>
-                            <p><strong>Sua Resposta:</strong> {res.respostaEscolhida}</p>
-                            <p><strong>Resposta Correta:</strong> {res.respostaCorreta}</p>
-                        </div>
-                    ))}
+                                <p className="font-medium">{res.explicacao || "Sem explicação disponível."}</p>
+                                <p><strong>Sua Resposta:</strong> {res.respostaEscolhida || "Não disponível"}</p>
+                                <p><strong>Resposta Correta:</strong> {res.respostaCorreta || "Não disponível"}</p>
+                            </div>
+
+                        ))
+                    ) : (
+                        <p className="text-gray-600">Nenhum resultado disponível.</p>
+                    )}
 
                     <p className="mt-4 text-lg">
                         <strong>Acertos:</strong> {acertos} | <strong>Erros:</strong> {erros}
@@ -59,7 +71,7 @@ export default function ResultsPage() {
 
                     <Button
                         className="w-full mt-6"
-                        onClick={() => router.push('/teacher')}
+                        onClick={() => router.push(localStorage.getItem('role') === 'professor' ? '/dashboard/teacher' : 'dashboard/students')}
                     >
                         Voltar ao Início
                     </Button>

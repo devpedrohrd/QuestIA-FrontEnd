@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { API_URL } from '@/app/utils/utils';
-
+import api from '@/app/services/api';
 
 type Alternative = {
   letra: string;
@@ -29,30 +28,26 @@ type ResponseFormDTO = {
 };
 
 export default function QuizPage({ params }: { params: { quizId: string } }) {
-  const router = useRouter()
+  const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // 🔹 Fetch das questões do quiz
+  // 🔹 Verificação de login antes de buscar as questões
   useEffect(() => {
+    const accessToken = localStorage.getItem('access_token');
+
+    if (!accessToken) {
+      // Se não estiver logado, redireciona para login com o redirect
+      router.push(`/`);
+      return;
+    }
+
     async function fetchQuestions() {
       try {
-        const response = await fetch(`${API_URL}/questions/${params.quizId}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar as questões');
-        }
-
-        const data: Question[] = await response.json();
-        setQuestions(data);
+        const response = await api.get<Question[]>(`/questions/${params.quizId}`);
+        setQuestions(response.data);
       } catch (error) {
         console.error('Erro ao carregar as questões:', error);
         toast.error('Erro ao carregar as questões. Tente novamente.');
@@ -62,7 +57,7 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
     }
 
     fetchQuestions();
-  }, [params.quizId]);
+  }, [router, params.quizId]);
 
   // 🔹 Atualiza a resposta selecionada pelo usuário
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -74,31 +69,24 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
     if (submitting) return;
     setSubmitting(true);
 
+    // 🔹 Verifica se o usuário está logado antes de enviar respostas
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      toast.error('Sua sessão expirou. Faça login novamente.');
+      router.push(`/login?redirect=/questions/${params.quizId}`);
+      return;
+    }
+
     try {
       const responseFormDTO: ResponseFormDTO[] = Object.entries(answers).map(([questionId, respostaEscolhida]) => ({
         questionId,
         respostaEscolhida,
       }));
 
-      console.log("Enviando para o backend:", JSON.stringify(responseFormDTO, null, 2));
+      const response = await api.post(`/questions/${params.quizId}/responses`, responseFormDTO);
+      const result = response.data;
 
-      const response = await fetch(`${API_URL}/questions/${params.quizId}/responses`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(responseFormDTO),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao enviar respostas');
-      }
-
-      const result = await response.json();
       toast.success('Respostas enviadas com sucesso!');
-      console.log('Resultado do quiz:', result);
-
       // 🔹 Armazena os resultados no sessionStorage antes de redirecionar
       sessionStorage.setItem('quizResults', JSON.stringify({
         resultados: result.resultados,

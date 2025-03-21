@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { API_URL } from '../utils/utils';
+import { API_URL } from '../../utils/utils';
+import api from '../../services/api';
 
 type Alternative = {
     letra: string;
     texto: string;
-
-
 };
 
 type Question = {
@@ -44,17 +43,8 @@ export default function StudentDashboard() {
     useEffect(() => {
         async function fetchQuizzes() {
             try {
-                const response = await fetch(`${API_URL}/quizzes`, {
-                    method: 'GET',
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar quizzes respondidos');
-                }
-
-                const data: Quiz[] = await response.json();
-                setQuizzes(data);
+                const response = await api.get<Quiz[]>('/quizzes');
+                setQuizzes(response.data);
             } catch (error) {
                 console.error('Erro ao carregar quizzes:', error);
             } finally {
@@ -84,9 +74,20 @@ export default function StudentDashboard() {
                                         <p className="font-bold">{quiz.titulo}</p>
                                         <p className="text-sm text-gray-600">{quiz.tema} - {quiz.nivelDificuldade}</p>
                                     </div>
-                                    <Button variant="secondary" onClick={() => router.push(`/students/review/${quiz.id}`)}>
-                                        Revisar
-                                    </Button>
+                                    <div className="flex space-x-2">
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => router.push(`/dashboard/students/review/${quiz.id}`)}
+                                        >
+                                            Revisar
+                                        </Button>
+                                        <Button
+                                            variant="default"
+                                            onClick={() => router.push(`/questions/${quiz.id}`)}
+                                        >
+                                            Refazer
+                                        </Button>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
