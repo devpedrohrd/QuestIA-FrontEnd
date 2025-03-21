@@ -54,7 +54,7 @@ export default function RankingPage({ params }: { params: { quizId: string } }) 
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Aluno</TableHead>
-                                    <TableHead>Email</TableHead>
+                                            <TableHead>Identificador</TableHead>
                                     <TableHead>Acertos</TableHead>
                                     <TableHead>Total de Tentativas</TableHead>
                                     <TableHead>Desempenho (%)</TableHead>
@@ -64,7 +64,7 @@ export default function RankingPage({ params }: { params: { quizId: string } }) 
                                 {ranking.map((student) => (
                                     <TableRow key={student.alunoId}>
                                         <TableCell>{student.nome}</TableCell>
-                                        <TableCell>{student.email}</TableCell>
+                                        <TableCell>{student.alunoId}</TableCell>
                                         <TableCell className="font-bold text-green-600">
                                             {student.acertos}
                                         </TableCell>
